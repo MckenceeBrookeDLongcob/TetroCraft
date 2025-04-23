@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TetroCraft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --mc-green: #6CAA34;
+      --mc-dark: #202428;
+      --mc-light: #F2F2F2;
+      --mc-panel: #2E3238;
+      --mc-accent: #8EBF43;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background: url('https://resources.minecraft.net/media/background/pattern_3.png') repeat;
+      background-color: var(--mc-dark);
+      color: var(--mc-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .game-container {
+      display: flex;
+      background: var(--mc-panel);
+      border: 6px solid var(--mc-accent);
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.7);
+      overflow: hidden;
+    }
+    .game-info {
+      padding: 40px;
+      width: 280px;
+      background: linear-gradient(135deg, var(--mc-panel) 0%, #2A2E34 100%);
+      
+    }
+    .game-info h1 {
+      font-size: 1.8rem;
+      color: var(--mc-accent);
+      margin-bottom: 1.2rem;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+    }
+    .game-info p {
+      font-size: 0.8rem;
+      margin: 0.8rem 0;
+      line-height: 1.4;
+    }
+    .game-info button {
+      display: block;
+      width: 100%;
+      margin-top: 2rem;
+      padding: 12px;
+      font-size: 0.8rem;
+      background: var(--mc-green);
+      border: 3px solid #4F7C24;
+      border-radius: 4px;
+      color: var(--mc-dark);
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .game-info button:hover {
+      background: #89C14C;
+      transform: translateY(-2px);
+    }
+    .game-info button:active {
+      background: #5A8C2A;
+      transform: translateY(1px);
+    }
+
+    #gameCanvas {
+      width: 300px;
+      height: 600px;
+      background: url('daybg.jpg') center center / cover no-repeat;
+      border-left: 6px solid var(--mc-accent);
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.7), 0 4px 15px rgba(0,0,0,0.8);
+    }
+
+
+  .mobile-controls {
+  display: none;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: #1c1f22;
+  border-top: 3px solid var(--mc-accent);
+}
+
+.control-btn {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1rem;
+  background: var(--mc-green);
+  border: 2px solid #4F7C24;
+  color: var(--mc-dark);
+  margin: 5px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 60px;
+}
+
+.game-over-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 2rem;
+    border: 4px solid var(--mc-accent);
+    border-radius: 12px;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive;
+    z-index: 100;
+    display: none;
+  }
+
+  .game-over-screen h2 {
+    margin-bottom: 1rem;
+    color: var(--mc-accent);
+  }
+
+  .game-over-screen p {
+    margin: 1rem 0;
+  }
+
+  .game-over-screen button {
+    margin: 0.5rem;
+    padding: 10px 20px;
+    background-color: var(--mc-green);
+    color: var(--mc-dark);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
+
+  .game-container {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .game-info {
+    width: 100%;
+    padding: 20px;
+  }
+
+  #gameCanvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .mobile-controls {
+    display: flex;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-info">
+      <h1>Tetro Craft</h1>
+      <p>Score: <span id="score">0</span></p>
+      <p>Lines Cleared: <span id="lines-cleared">0</span></p>
+      <p>Time: <span id="time">0</span>s</p>
+      <h4>Next</h4>
+      <canvas id="previewCanvas" width="170" height="120" 
+        style="background:#1c1f22;border:3px solid var(--mc-accent);margin-top:1rem;">
+      </canvas>
+      <button id="startButton">Start Game</button>
+      <button id="pauseResumeButton" style="display: none;">Pause</button>
+    </div>
+    <div class="game-over-screen" id="gameOverScreen">
+      <h2>Game Over!</h2>
+      <p>Final Score: <span id="finalScore">0</span></p>
+      <p>High Score: <span id="highScoreDisplay">0</span></p>
+      <button onclick="restartGame()">Restart</button>
+      <button onclick="quitGame()">Quit</button>
+    </div>
+    <canvas id="gameCanvas" width="300" height="600"></canvas>
+    <div class="mobile-controls">
+      <button class="control-btn" id="leftBtn">◀</button>
+      <button class="control-btn" id="rightBtn">▶</button>
+      <button class="control-btn" id="downBtn">▼</button>
+      <button class="control-btn" id="rotateBtn">⟳</button>
+      <button class="control-btn" id="dropBtn">⤓</button>
+    </div>    
+  </div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewCtx = previewCanvas.getContext('2d');
+    let nextTetromino, nextImage;
+
+    const scoreElement = document.getElementById('score');
+    const linesClearedElement = document.getElementById('lines-cleared');
+    const timeElement = document.getElementById('time');
+    const startButton = document.getElementById('startButton');
+    const pauseResumeButton = document.getElementById('pauseResumeButton');
+  
+    const grid = 30;
+    const rows = 20;
+    const cols = 10;
+    let score = 0, linesCleared = 0, time = 0;
+    let gameInterval, blockDropInterval, timeInterval;
+    let gameOver = false, gamePaused = false;
+  
+    const tetrominoes = [
+      { shape: [[1,1,1],[0,1,0]], name: 'T' },
+      { shape: [[1,1],[1,1]], name: 'O' },
+      { shape: [[1,1,0],[0,1,1]], name: 'S' },
+      { shape: [[0,1,1],[1,1,0]], name: 'Z' },
+      { shape: [[1,1,1,1]], name: 'I' },
+      { shape: [[1,0,0],[1,1,1]], name: 'L' },
+      { shape: [[0,0,1],[1,1,1]], name: 'J' }
+    ];
+  
+    const images = {};
+    const imagePaths = {
+      T: 'grass2.jpg',
+      O: 'sand2.jpg',
+      S: 'cobble.jpg',
+      Z: 'dirt.jpg',
+      I: 'wood2.jpg',
+      L: 'plank.jpg',
+      J: 'stone.jpeg'
+    };
+  
+    function preloadImages(imageMap, paths, callback) {
+      let loaded = 0;
+      const total = Object.keys(paths).length;
+      for (const key in paths) {
+        const img = new Image();
+        img.src = paths[key];
+        img.onload = () => {
+          loaded++;
+          if (loaded === total) callback();
+        };
+        img.onerror = () => {
+          console.error("Failed to load image: " + paths[key]);
+        };
+        imageMap[key] = img;
+      }
+    }
+  
+    let board = Array.from({ length: rows }, () => Array(cols).fill(null));
+    let currentTetromino, currentImage;
+    let currentPos = { x: Math.floor(cols / 2) - 1, y: 0 };
+  
+    function startGame() {
+  gameOver = false;
+  score = 0;
+  linesCleared = 0;
+  time = 0;
+  scoreElement.textContent = score;
+  linesClearedElement.textContent = linesCleared;
+  timeElement.textContent = time;
+
+  board = Array.from({ length: rows }, () => Array(cols).fill(null));
+  nextTetromino = getRandomTetromino();
+  spawnTetromino(); // this will use the next one and set a new preview
+
+  clearInterval(gameInterval);
+  clearInterval(blockDropInterval);
+  clearInterval(timeInterval);
+
+  gameInterval = setInterval(updateGame, 100);
+  blockDropInterval = setInterval(dropBlock, 500);
+  timeInterval = setInterval(() => {
+    if (!gameOver) {
+      time++;
+      timeElement.textContent = time;
+    }
+  }, 1000);
+
+  startButton.style.display = 'none';
+  pauseResumeButton.style.display = 'inline';
+}
+
+function getRandomTetromino() {
+  const selected = tetrominoes[Math.floor(Math.random() * tetrominoes.length)];
+  return {
+    shape: selected.shape,
+    image: images[selected.name]
+  };
+}
+
+  
+function spawnTetromino() {
+  currentTetromino = nextTetromino.shape;
+  currentImage = nextTetromino.image;
+  currentPos = { x: Math.floor(cols / 2) - 1, y: 0 };
+
+  // Prepare the next one
+  nextTetromino = getRandomTetromino();
+  drawPreview();
+}
+
+function drawPreview() {
+  previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+  const shape = nextTetromino.shape;
+  const img = nextTetromino.image;
+
+  const blockSize = 30;
+  const offsetX = (previewCanvas.width - shape[0].length * blockSize) / 2;
+  const offsetY = (previewCanvas.height - shape.length * blockSize) / 2;
+
+  for (let y = 0; y < shape.length; y++) {
+    for (let x = 0; x < shape[y].length; x++) {
+      if (shape[y][x]) {
+        previewCtx.drawImage(img, offsetX + x * blockSize, offsetY + y * blockSize, blockSize, blockSize);
+      }
+    }
+  }
+}
+
+  
+    function checkCollision(shape, offsetX, offsetY) {
+      for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[y].length; x++) {
+          if (shape[y][x]) {
+            const newX = offsetX + x;
+            const newY = offsetY + y;
+            if (newX < 0 || newX >= cols || newY >= rows || (board[newY] && board[newY][newX])) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+  
+    function isCollision() {
+      return checkCollision(currentTetromino, currentPos.x, currentPos.y);
+    }
+  
+    function drawBoard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (board[y][x]) {
+            ctx.drawImage(board[y][x], x * grid, y * grid, grid, grid);
+          }
+        }
+      }
+    }
+  
+    function drawTetromino() {
+      for (let y = 0; y < currentTetromino.length; y++) {
+        for (let x = 0; x < currentTetromino[y].length; x++) {
+          if (currentTetromino[y][x]) {
+            ctx.drawImage(currentImage, (currentPos.x + x) * grid, (currentPos.y + y) * grid, grid, grid);
+          }
+        }
+      }
+    }
+  
+    function drawGhostTetromino() {
+      let ghostY = currentPos.y;
+      while (!checkCollision(currentTetromino, currentPos.x, ghostY + 1)) {
+        ghostY++;
+      }
+  
+      ctx.globalAlpha = 0.3;
+      for (let y = 0; y < currentTetromino.length; y++) {
+        for (let x = 0; x < currentTetromino[y].length; x++) {
+          if (currentTetromino[y][x]) {
+            ctx.drawImage(currentImage, (currentPos.x + x) * grid, (ghostY + y) * grid, grid, grid);
+          }
+        }
+      }
+      ctx.globalAlpha = 1.0;
+    }
+  
+    function moveTetromino(dx, dy) {
+      currentPos.x += dx;
+      currentPos.y += dy;
+      if (isCollision()) {
+        currentPos.x -= dx;
+        currentPos.y -= dy;
+        return false;
+      }
+      return true;
+    }
+  
+    function rotateTetromino() {
+      const rotated = currentTetromino[0].map((_, i) => currentTetromino.map(row => row[i])).reverse();
+      const prev = currentTetromino;
+      currentTetromino = rotated;
+      if (isCollision()) currentTetromino = prev;
+    }
+
+    let highScore = localStorage.getItem("highScore") || 0;
+
+    function updateHighScore() {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+      }
+    }
+
+    function showGameOverScreen() {
+      updateHighScore();
+
+      const overlay = document.createElement("div");
+      overlay.id = "gameOverOverlay";
+      overlay.style.position = "fixed";
+      overlay.style.top = 0;
+      overlay.style.left = 0;
+      overlay.style.width = "100%";
+      overlay.style.height = "100%";
+      overlay.style.background = "rgba(0,0,0,0.85)";
+      overlay.style.display = "flex";
+      overlay.style.flexDirection = "column";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      overlay.style.color = "white";
+      overlay.style.fontFamily = "'Press Start 2P', cursive";
+      overlay.style.zIndex = 9999;
+
+      overlay.innerHTML = `
+        <h2 style="color: var(--mc-accent); font-size: 1.4rem; margin-bottom: 1rem;">Game Over</h2>
+        <p style="margin-bottom: 0.6rem;">Your Score: ${score}</p>
+        <p style="margin-bottom: 1.2rem;">High Score: ${highScore}</p>
+        <button onclick="restartGame()" style="padding: 10px 20px; font-size: 0.8rem; margin: 5px; background: var(--mc-green); border: 3px solid #4F7C24; color: var(--mc-dark);">Restart</button>
+        <button onclick="closeGame()" style="padding: 10px 20px; font-size: 0.8rem; margin: 5px; background: #444; border: 3px solid #222; color: white;">Quit</button>
+      `;
+
+      document.body.appendChild(overlay);
+    }
+
+    function restartGame() {
+      const overlay = document.getElementById("gameOverOverlay");
+      if (overlay) overlay.remove();
+      startGame();
+    }
+
+    function closeGame() {
+      const overlay = document.getElementById("gameOverOverlay");
+      if (overlay) overlay.remove();
+      startButton.style.display = 'inline';
+      pauseResumeButton.style.display = 'none';
+    }
+
+    function dropBlock() {
+      if (!moveTetromino(0, 1)) {
+        for (let y = 0; y < currentTetromino.length; y++) {
+          for (let x = 0; x < currentTetromino[y].length; x++) {
+            if (currentTetromino[y][x]) {
+              board[currentPos.y + y][currentPos.x + x] = currentImage;
+            }
+          }
+        }
+        clearLines();
+        spawnTetromino();
+        if (isCollision()) {
+          gameOver = true;
+          clearInterval(gameInterval);
+          clearInterval(blockDropInterval);
+          clearInterval(timeInterval);
+          showGameOverScreen();
+        }
+      }
+    }
+  
+    function clearLines() {
+      for (let y = rows - 1; y >= 0; y--) {
+        if (board[y].every(cell => cell)) {
+          board.splice(y, 1);
+          board.unshift(Array(cols).fill(null));
+          linesCleared++;
+          score += 100;
+          scoreElement.textContent = score;
+          linesClearedElement.textContent = linesCleared;
+          y++; 
+        }
+      }
+    }
+
+  
+    function updateGame() {
+      drawBoard();
+      drawGhostTetromino();
+      drawTetromino();
+    }
+  
+    function togglePauseResume() {
+      if (gamePaused) {
+        gameInterval = setInterval(updateGame, 100);
+        blockDropInterval = setInterval(dropBlock, 500);
+        timeInterval = setInterval(() => {
+          if (!gameOver) {
+            time++;
+            timeElement.textContent = time;
+          }
+        }, 1000);
+        pauseResumeButton.textContent = 'Pause';
+      } else {
+        clearInterval(gameInterval);
+        clearInterval(blockDropInterval);
+        clearInterval(timeInterval);
+        pauseResumeButton.textContent = 'Resume';
+      }
+      gamePaused = !gamePaused;
+    }
+  
+    function hardDrop() {
+      while (!checkCollision(currentTetromino, currentPos.x, currentPos.y + 1)) {
+        currentPos.y++;
+      }
+      dropBlock();
+    }
+  
+    preloadImages(images, imagePaths, () => {
+      startButton.disabled = false;
+      startButton.textContent = "Start Game";
+      startButton.addEventListener('click', startGame);
+    });
+  
+    startButton.disabled = true;
+    startButton.textContent = "Loading...";
+    pauseResumeButton.addEventListener('click', togglePauseResume);
+  
+    document.addEventListener("keydown", (e) => {
+      if (gameOver || gamePaused) return;
+      if (e.key === "ArrowLeft") moveTetromino(-1, 0);
+      if (e.key === "ArrowRight") moveTetromino(1, 0);
+      if (e.key === "ArrowDown") moveTetromino(0, 1);
+      if (e.key === "ArrowUp") rotateTetromino();
+      if (e.key === " ") hardDrop(); // Spacebar for hard drop
+    });
+
+    // Touch button events
+    document.getElementById('leftBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) moveTetromino(-1, 0);
+    });
+    document.getElementById('rightBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) moveTetromino(1, 0);
+    });
+    document.getElementById('downBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) moveTetromino(0, 1);
+    });
+    document.getElementById('rotateBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) rotateTetromino();
+    });
+    document.getElementById('dropBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) hardDrop();
+    });
+  </script>  
+</body>
+</html>

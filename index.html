@@ -196,14 +196,6 @@
       <button onclick="quitGame()">Quit</button>
     </div>
     <canvas id="gameCanvas" width="300" height="600"></canvas>
-    <div class="mobile-controls">
-      <button class="control-btn" id="leftBtn">◀</button>
-      <button class="control-btn" id="rightBtn">▶</button>
-      <button class="control-btn" id="downBtn">▼</button>
-      <button class="control-btn" id="rotateBtn">⟳</button>
-      <button class="control-btn" id="dropBtn">⤓</button>
-    </div>    
-  </div>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -551,22 +543,44 @@ function drawPreview() {
       if (e.key === " ") hardDrop(); // Spacebar for hard drop
     });
 
-    // Touch button events
-    document.getElementById('leftBtn').addEventListener('click', () => {
-      if (!gamePaused && !gameOver) moveTetromino(-1, 0);
-    });
-    document.getElementById('rightBtn').addEventListener('click', () => {
-      if (!gamePaused && !gameOver) moveTetromino(1, 0);
-    });
-    document.getElementById('downBtn').addEventListener('click', () => {
-      if (!gamePaused && !gameOver) moveTetromino(0, 1);
-    });
-    document.getElementById('rotateBtn').addEventListener('click', () => {
-      if (!gamePaused && !gameOver) rotateTetromino();
-    });
-    document.getElementById('dropBtn').addEventListener('click', () => {
-      if (!gamePaused && !gameOver) hardDrop();
-    });
+    // Touch controls for mobile
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+
+canvas.addEventListener('touchstart', function(e) {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+}, false);
+
+canvas.addEventListener('touchend', function(e) {
+  const touch = e.changedTouches[0];
+  touchEndX = touch.clientX;
+  touchEndY = touch.clientY;
+
+  handleSwipe();
+}, false);
+
+function handleSwipe() {
+  const dx = touchEndX - touchStartX;
+  const dy = touchEndY - touchStartY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 30) {
+      moveTetromino(1, 0); // Swipe right
+    } else if (dx < -30) {
+      moveTetromino(-1, 0); // Swipe left
+    }
+  } else {
+    if (dy > 30) {
+      moveTetromino(0, 1); // Swipe down
+    } else if (dy < -30) {
+      rotateTetromino(); // Swipe up
+    }
+  }
+}
   </script>  
 </body>
 </html>

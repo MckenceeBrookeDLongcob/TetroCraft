@@ -543,44 +543,63 @@ function drawPreview() {
       if (e.key === " ") hardDrop(); // Spacebar for hard drop
     });
 
-    // Touch controls for mobile
 let touchStartX = 0;
 let touchStartY = 0;
-let touchEndX = 0;
-let touchEndY = 0;
+let touchStartTime = 0;
+let softDropInterval = null;
 
-canvas.addEventListener('touchstart', function(e) {
+gameContainer.addEventListener("touchstart", (e) => {
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
-}, false);
+  touchStartTime = Date.now();
+});
 
-canvas.addEventListener('touchend', function(e) {
+gameContainer.addEventListener("touchmove", (e) => {
+  // Prevent scrolling
+  e.preventDefault();
+}, { passive: false });
+
+gameContainer.addEventListener("touchend", (e) => {
   const touch = e.changedTouches[0];
-  touchEndX = touch.clientX;
-  touchEndY = touch.clientY;
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+  const elapsedTime = Date.now() - touchStartTime;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+  const swipeThreshold = 20;
+  const tapThreshold = 10;
+  const timeThreshold = 200;
 
-  handleSwipe();
-}, false);
+  // Tap to rotate
+  if (absDx < tapThreshold && absDy < tapThreshold && elapsedTime < timeThreshold) {
+    rotate();
+    return;
+  }
 
-function handleSwipe() {
-  const dx = touchEndX - touchStartX;
-  const dy = touchEndY - touchStartY;
-
-  if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 30) {
-      moveTetromino(1, 0); // Swipe right
-    } else if (dx < -30) {
-      moveTetromino(-1, 0); // Swipe left
-    }
-  } else {
-    if (dy > 30) {
-      moveTetromino(0, 1); // Swipe down
-    } else if (dy < -30) {
-      rotateTetromino(); // Swipe up
+  if (absDx > absDy && absDx > swipeThreshold) {
+    if (dx > 0) moveRight();
+    else moveLeft();
+  } else if (absDy > absDx && absDy > swipeThreshold) {
+    if (dy > 0) {
+      // Soft drop: hold for faster repeat
+      softDrop();
+      softDropInterval = setInterval(softDrop, 80);
+    } else {
+      // Hard drop
+      hardDrop();
     }
   }
-}
+});
+
+gameContainer.addEventListener("touchcancel", () => {
+  clearInterval(softDropInterval);
+});
+
+gameContainer.addEventListener("touchend", () => {
+  clearInterval(softDropInterval);
+});
+
   </script>  
 </body>
 </html>

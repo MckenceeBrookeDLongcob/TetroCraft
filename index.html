@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,9 +44,9 @@
       
     }
     .game-info h1 {
-      font-size: 1.8rem;
+      font-size: 1.9rem;
       color: var(--mc-accent);
-      margin-bottom: 1.2rem;
+      margin-bottom: 2.0rem;
       text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
     }
     .game-info p {
@@ -82,6 +83,78 @@
       background: url('daybg.jpg') center center / cover no-repeat;
       border-left: 6px solid var(--mc-accent);
       box-shadow: inset 0 0 15px rgba(0,0,0,0.7), 0 4px 15px rgba(0,0,0,0.8);
+    }
+
+    .tutorial-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      display: none;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .tutorial-content {
+      background: var(--mc-panel);
+      border: 6px solid var(--mc-accent);
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 30px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+    
+    .tutorial-content h2 {
+      color: var(--mc-accent);
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+    
+    .tutorial-content h3 {
+      color: var(--mc-green);
+      margin: 15px 0 10px;
+      font-size: 1.1rem;
+    }
+    
+    .tutorial-content ul {
+      margin: 10px 0 20px 20px;
+    }
+    
+    .tutorial-content li {
+      margin-bottom: 8px;
+    }
+    
+    .close-tutorial {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--mc-green);
+      border: 3px solid #4F7C24;
+      color: var(--mc-dark);
+      padding: 10px 15px;
+      cursor: pointer;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.8rem;
+    }
+    
+    .tutorial-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--mc-green);
+      border: 3px solid #4F7C24;
+      color: var(--mc-dark);
+      padding: 10px 15px;
+      cursor: pointer;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.8rem;
+      z-index: 10;
     }
 
 
@@ -181,7 +254,7 @@
       <p>Score: <span id="score">0</span></p>
       <p>Lines Cleared: <span id="lines-cleared">0</span></p>
       <p>Time: <span id="time">0</span>s</p>
-      <h4>Next</h4>
+      <h4>Next:</h4>
       <canvas id="previewCanvas" width="170" height="120" 
         style="background:#1c1f22;border:3px solid var(--mc-accent);margin-top:1rem;">
       </canvas>
@@ -196,7 +269,78 @@
       <button onclick="quitGame()">Quit</button>
     </div>
     <canvas id="gameCanvas" width="300" height="600"></canvas>
+    <div class="mobile-controls">
+      <button class="control-btn" id="leftBtn">◀</button>
+      <button class="control-btn" id="rightBtn">▶</button>
+      <button class="control-btn" id="downBtn">▼</button>
+      <button class="control-btn" id="rotateBtn">⟳</button>
+      <button class="control-btn" id="dropBtn">⤓</button>
+    </div>    
+  </div>
+
+  <!-- tutorial button -->
+  <button class="tutorial-btn" id="tutorialBtn">Tutorial</button>
+  
+  <!-- tutorial panel -->
+  <div class="tutorial-panel" id="tutorialPanel">
+    <button class="close-tutorial" id="closeTutorial">Close</button>
+    <div class="tutorial-content">
+      <h2>TetroCraft Tutorial</h2>
+      
+      <h3>How to Play</h3>
+      <p>TetroCraft is a Minecraft-themed Tetris game. Your goal is to stack the falling blocks to complete horizontal lines.</p>
+      
+      <h3>Controls</h3>
+      <ul>
+        <li><strong>Arrow Left</strong>: Move block left</li>
+        <li><strong>Arrow Right</strong>: Move block right</li>
+        <li><strong>Arrow Down</strong>: Move block down faster</li>
+        <li><strong>Arrow Up</strong>: Rotate block</li>
+        <li><strong>Spacebar</strong>: Hard drop (instantly drop to bottom)</li>
+        <li><strong>Pause/Resume Button</strong>: Pause or resume the game</li>
+      </ul>
+      
+      <h3>Scoring</h3>
+      <ul>
+        <li>100 points for each line cleared</li>
+        <li>The more lines you clear at once, the higher your score</li>
+      </ul>
+      
+      <h3>Game Features</h3>
+      <ul>
+        <li><strong>Ghost piece</strong>: Shows where your block will land</li>
+        <li><strong>Next piece preview</strong>: See what's coming next</li>
+        <li><strong>High scores</strong>: Saved between games</li>
+        <li><strong>Mobile controls</strong>: On-screen buttons for touch devices</li>
+      </ul>
+      
+      <h3>Tips</h3>
+      <ul>
+        <li>Try to leave a space in the middle for the I-piece (long stick)</li>
+        <li>Use hard drop (spacebar) to quickly place pieces</li>
+        <li>Plan ahead using the next piece preview</li>
+      </ul>
+    </div>
+  </div>
+
+  <audio id="bgMusic" src="minecraft-bgsong.mp3" preload="auto" loop></audio>
+  <audio id="lineClearSound" src="lineclear.mp3" preload="auto"></audio>
+  <audio id="dropSound" src="dropdown.mp3" preload="auto"></audio>
+
   <script>
+    const lineClearSound = document.getElementById('lineClearSound');
+    const dropSound = document.getElementById('dropSound');
+
+    function playLineClearSound() {
+      lineClearSound.currentTime = 0;
+      lineClearSound.play();
+    }
+
+    function playDropSound() {
+      dropSound.currentTime = 0;
+      dropSound.play();
+    }
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -260,72 +404,76 @@
     let currentPos = { x: Math.floor(cols / 2) - 1, y: 0 };
   
     function startGame() {
-  gameOver = false;
-  score = 0;
-  linesCleared = 0;
-  time = 0;
-  scoreElement.textContent = score;
-  linesClearedElement.textContent = linesCleared;
-  timeElement.textContent = time;
-
-  board = Array.from({ length: rows }, () => Array(cols).fill(null));
-  nextTetromino = getRandomTetromino();
-  spawnTetromino(); // this will use the next one and set a new preview
-
-  clearInterval(gameInterval);
-  clearInterval(blockDropInterval);
-  clearInterval(timeInterval);
-
-  gameInterval = setInterval(updateGame, 100);
-  blockDropInterval = setInterval(dropBlock, 500);
-  timeInterval = setInterval(() => {
-    if (!gameOver) {
-      time++;
+      gameOver = false;
+      score = 0;
+      linesCleared = 0;
+      time = 0;
+      scoreElement.textContent = score;
+      linesClearedElement.textContent = linesCleared;
       timeElement.textContent = time;
+
+      board = Array.from({ length: rows }, () => Array(cols).fill(null));
+      nextTetromino = getRandomTetromino();
+      spawnTetromino(); 
+
+      clearInterval(gameInterval);
+      clearInterval(blockDropInterval);
+      clearInterval(timeInterval);
+
+      gameInterval = setInterval(updateGame, 100);
+      blockDropInterval = setInterval(dropBlock, 500);
+      timeInterval = setInterval(() => {
+        if (!gameOver) {
+          time++;
+          timeElement.textContent = time;
+        }
+      }, 1000);
+
+      startButton.style.display = 'none';
+      pauseResumeButton.style.display = 'inline';
+
+      const bgMusic = document.getElementById('bgMusic');
+      bgMusic.currentTime = 0;
+      bgMusic.play().catch(err => {
+        console.warn("Autoplay failed: ", err);
+      });
     }
-  }, 1000);
 
-  startButton.style.display = 'none';
-  pauseResumeButton.style.display = 'inline';
-}
-
-function getRandomTetromino() {
-  const selected = tetrominoes[Math.floor(Math.random() * tetrominoes.length)];
-  return {
-    shape: selected.shape,
-    image: images[selected.name]
-  };
-}
-
+    function getRandomTetromino() {
+      const selected = tetrominoes[Math.floor(Math.random() * tetrominoes.length)];
+      return {
+        shape: selected.shape,
+        image: images[selected.name]
+      };
+    }
   
-function spawnTetromino() {
-  currentTetromino = nextTetromino.shape;
-  currentImage = nextTetromino.image;
-  currentPos = { x: Math.floor(cols / 2) - 1, y: 0 };
+    function spawnTetromino() {
+      currentTetromino = nextTetromino.shape;
+      currentImage = nextTetromino.image;
+      currentPos = { x: Math.floor(cols / 2) - 1, y: 0 };
 
-  // Prepare the next one
-  nextTetromino = getRandomTetromino();
-  drawPreview();
-}
+      nextTetromino = getRandomTetromino();
+      drawPreview();
+    }
 
-function drawPreview() {
-  previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    function drawPreview() {
+      previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
-  const shape = nextTetromino.shape;
-  const img = nextTetromino.image;
+      const shape = nextTetromino.shape;
+      const img = nextTetromino.image;
 
-  const blockSize = 30;
-  const offsetX = (previewCanvas.width - shape[0].length * blockSize) / 2;
-  const offsetY = (previewCanvas.height - shape.length * blockSize) / 2;
+      const blockSize = 30;
+      const offsetX = (previewCanvas.width - shape[0].length * blockSize) / 2;
+      const offsetY = (previewCanvas.height - shape.length * blockSize) / 2;
 
-  for (let y = 0; y < shape.length; y++) {
-    for (let x = 0; x < shape[y].length; x++) {
-      if (shape[y][x]) {
-        previewCtx.drawImage(img, offsetX + x * blockSize, offsetY + y * blockSize, blockSize, blockSize);
+      for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[y].length; x++) {
+          if (shape[y][x]) {
+            previewCtx.drawImage(img, offsetX + x * blockSize, offsetY + y * blockSize, blockSize, blockSize);
+          }
+        }
       }
     }
-  }
-}
 
   
     function checkCollision(shape, offsetX, offsetY) {
@@ -457,6 +605,12 @@ function drawPreview() {
 
     function dropBlock() {
       if (!moveTetromino(0, 1)) {
+        let cleared = checkIfLinesWillClear();
+
+        if (!cleared) {
+          playDropSound();
+        }
+
         for (let y = 0; y < currentTetromino.length; y++) {
           for (let x = 0; x < currentTetromino[y].length; x++) {
             if (currentTetromino[y][x]) {
@@ -464,8 +618,10 @@ function drawPreview() {
             }
           }
         }
+
         clearLines();
         spawnTetromino();
+
         if (isCollision()) {
           gameOver = true;
           clearInterval(gameInterval);
@@ -477,18 +633,42 @@ function drawPreview() {
     }
   
     function clearLines() {
+      let lines = 0;
       for (let y = rows - 1; y >= 0; y--) {
-        if (board[y].every(cell => cell)) {
+        if (board[y].every(cell => cell !== null)) {
           board.splice(y, 1);
           board.unshift(Array(cols).fill(null));
-          linesCleared++;
-          score += 100;
-          scoreElement.textContent = score;
-          linesClearedElement.textContent = linesCleared;
+          lines++;
           y++; 
         }
       }
+
+      if (lines > 0) {
+        linesCleared += lines;
+        score += lines * 100;
+        linesClearedElement.textContent = linesCleared;
+        scoreElement.textContent = score;
+        playLineClearSound(); 
+      }
     }
+
+function checkIfLinesWillClear() {
+  let tempBoard = board.map(row => [...row]);
+
+  for (let y = 0; y < currentTetromino.length; y++) {
+    for (let x = 0; x < currentTetromino[y].length; x++) {
+      if (currentTetromino[y][x]) {
+        let boardY = currentPos.y + y;
+        let boardX = currentPos.x + x;
+        if (boardY >= 0 && boardY < tempBoard.length && boardX >= 0 && boardX < tempBoard[0].length) {
+          tempBoard[boardY][boardX] = currentImage;
+        }
+      }
+    }
+  }
+
+  return tempBoard.some(row => row.every(cell => cell !== 0));
+}
 
   
     function updateGame() {
@@ -498,31 +678,36 @@ function drawPreview() {
     }
   
     function togglePauseResume() {
-      if (gamePaused) {
-        gameInterval = setInterval(updateGame, 100);
-        blockDropInterval = setInterval(dropBlock, 500);
-        timeInterval = setInterval(() => {
-          if (!gameOver) {
-            time++;
-            timeElement.textContent = time;
-          }
-        }, 1000);
-        pauseResumeButton.textContent = 'Pause';
-      } else {
-        clearInterval(gameInterval);
-        clearInterval(blockDropInterval);
-        clearInterval(timeInterval);
-        pauseResumeButton.textContent = 'Resume';
+  if (gamePaused) {
+    gameInterval = setInterval(updateGame, 100);
+    blockDropInterval = setInterval(dropBlock, 500);
+    timeInterval = setInterval(() => {
+      if (!gameOver) {
+        time++;
+        timeElement.textContent = time;
       }
-      gamePaused = !gamePaused;
-    }
+    }, 1000);
+    bgMusic.play(); // ✅ Resume background music
+    pauseResumeButton.textContent = 'Pause';
+  } else {
+    clearInterval(gameInterval);
+    clearInterval(blockDropInterval);
+    clearInterval(timeInterval);
+    bgMusic.pause(); // ✅ Pause background music
+    pauseResumeButton.textContent = 'Resume';
+  }
+  gamePaused = !gamePaused;
+}
+
   
     function hardDrop() {
       while (!checkCollision(currentTetromino, currentPos.x, currentPos.y + 1)) {
         currentPos.y++;
       }
-      dropBlock();
+      playDropSound(); // 🔊 Play hard drop sound right before the piece locks in
+      dropBlock();     // Lock the tetromino into the board
     }
+
   
     preloadImages(images, imagePaths, () => {
       startButton.disabled = false;
@@ -543,45 +728,47 @@ function drawPreview() {
       if (e.key === " ") hardDrop(); // Spacebar for hard drop
     });
 
-// Touch controls for mobile
-let touchStartX = 0;
-let touchStartY = 0;
-let touchEndX = 0;
-let touchEndY = 0;
+    // Touch button events
+    document.getElementById('leftBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) moveTetromino(-1, 0);
+    });
+    document.getElementById('rightBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) moveTetromino(1, 0);
+    });
+    document.getElementById('downBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) moveTetromino(0, 1);
+    });
+    document.getElementById('rotateBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) rotateTetromino();
+    });
+    document.getElementById('dropBtn').addEventListener('click', () => {
+      if (!gamePaused && !gameOver) hardDrop();
+    });
 
-canvas.addEventListener('touchstart', function(e) {
-  const touch = e.touches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
-}, false);
-
-canvas.addEventListener('touchend', function(e) {
-  const touch = e.changedTouches[0];
-  touchEndX = touch.clientX;
-  touchEndY = touch.clientY;
-
-  handleSwipe();
-}, false);
-
-function handleSwipe() {
-  const dx = touchEndX - touchStartX;
-  const dy = touchEndY - touchStartY;
-
-  if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 30) {
-      moveTetromino(1, 0); // Swipe right
-    } else if (dx < -30) {
-      moveTetromino(-1, 0); // Swipe left
-    }
-  } else {
-    if (dy > 30) {
-      moveTetromino(0, 1); // Swipe down
-    } else if (dy < -30) {
-      rotateTetromino(); // Swipe up
-    }
-  }
-}
-
+    document.addEventListener('DOMContentLoaded', function() {
+      const tutorialBtn = document.getElementById('tutorialBtn');
+      const tutorialPanel = document.getElementById('tutorialPanel');
+      const closeTutorial = document.getElementById('closeTutorial');
+      
+      if (tutorialBtn && tutorialPanel && closeTutorial) {
+        tutorialBtn.addEventListener('click', function() {
+          tutorialPanel.style.display = 'block';
+        });
+        
+        closeTutorial.addEventListener('click', function() {
+          tutorialPanel.style.display = 'none';
+        });
+        
+        // Close when clicking outside content
+        tutorialPanel.addEventListener('click', function(e) {
+          if (e.target === tutorialPanel) {
+            tutorialPanel.style.display = 'none';
+          }
+        });
+      } else {
+        console.error("Tutorial elements not found!");
+      }
+    });
   </script>  
 </body>
 </html>
